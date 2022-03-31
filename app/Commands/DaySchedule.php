@@ -12,7 +12,8 @@ class DaySchedule extends BaseCommand
     function processCommand($param = null)
     {
         $timestamp = json_decode($this->update->getCallbackQuery()->getData(), true)['date'];
-        $eventDates = EventDate::findEventsByDay(Carbon::createFromTimestamp($timestamp)->day);
+        $date = Carbon::createFromTimestamp($timestamp);
+        $eventDates = EventDate::findEventsByDate($date->day, $date->month);
 
         $keyboard = [];
         foreach ($eventDates as $eventDate) {

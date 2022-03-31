@@ -3,12 +3,10 @@
 namespace App\Commands;
 
 use App\Services\Enums\UserRole;
-use App\Services\Enums\UserStatus;
 use TelegramBot\Api\Types\Update;
 use App\Models\User;
-use App\Utils\Api;
 
-abstract class BaseCommand
+abstract class BaseCommand extends BasicMessages
 {
 
     protected User $user;
@@ -18,22 +16,6 @@ abstract class BaseCommand
     protected array $text;
 
     protected Update $update;
-
-    private $bot;
-
-    public function __construct(Update $update)
-    {
-        $this->update = $update;
-        if ($update->getCallbackQuery()) {
-            $this->botUser = $update->getCallbackQuery()->getFrom();
-        } elseif ($update->getMessage()) {
-            $this->botUser = $update->getMessage()->getFrom();
-        } elseif ($update->getInlineQuery()) {
-            $this->botUser = $update->getInlineQuery()->getFrom();
-        } else {
-            throw new \Exception('cant get telegram user data');
-        }
-    }
 
     function handle($param = null)
     {
@@ -45,22 +27,11 @@ abstract class BaseCommand
                 'user_name'  => $this->botUser->getUsername(),
                 'first_name' => $this->botUser->getFirstName(),
                 'role'       => UserRole::USER,
-                'status'     => UserStatus::NEW,
+                'status'     => \App\Services\Enums\UserStatus::NEW,
             ],
         );
 
-        if ($this->user->isAdmin()) {
-            $this->processCommand($param);
-        }
-    }
-
-    public function getBot(): Api
-    {
-        if (!$this->bot) {
-            $this->bot = new Api(env('TELEGRAM_BOT_TOKEN'));
-        }
-
-        return $this->bot;
+        $this->processCommand($param);
     }
 
     function triggerCommand($class, $param = null)

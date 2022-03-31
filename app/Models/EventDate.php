@@ -20,11 +20,11 @@ class EventDate extends Model {
         return $this->belongsTo(Event::class);
     }
 
-    public static function findEventsByDay(int $day)
+    public static function findEventsByDate(int $day, int $month)
     {
         return EventDate::whereBetween('date', [
-            Carbon::create(Carbon::now()->year, Carbon::now()->month, $day)->startOfDay()->timestamp,
-            Carbon::create(Carbon::now()->year, Carbon::now()->month, $day)->endOfDay()->timestamp,
+            Carbon::create(Carbon::now()->year, $month, $day)->startOfDay()->timestamp,
+            Carbon::create(Carbon::now()->year, $month, $day)->endOfDay()->timestamp,
         ])->get();
     }
 

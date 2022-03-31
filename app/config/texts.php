@@ -17,6 +17,11 @@ return [
     'delete'                  => 'видалити',
     'create_event'            => 'створити подію',
     'event_created'           => 'Подія успішно створена.',
+    'next_month'              => '>',
+    'prev_month'              => '<',
+    'write_admin_username'    => 'Напиши юзернейм користувача',
+    'cant_find_user'          => 'Не можу знайти цього користувача',
+    'updated'                 => 'Оновлено',
 
     'months' => [
         1  => 'січень',

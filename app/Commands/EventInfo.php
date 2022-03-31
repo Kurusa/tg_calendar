@@ -58,7 +58,7 @@ class EventInfo extends BaseCommand
             $this->getBot()->sendMessageWithKeyboard(
                 $this->user->chat_id,
                 $template,
-                new InlineKeyboardMarkup($keyboard)
+                new InlineKeyboardMarkup($keyboard),
             );
         } else {
             $this->getBot()->editMessageText(
@@ -66,7 +66,7 @@ class EventInfo extends BaseCommand
                 $this->update->getCallbackQuery()->getMessage()->getMessageId(),
                 $template,
                 'HTML', false,
-                new InlineKeyboardMarkup($keyboard)
+                new InlineKeyboardMarkup($keyboard),
             );
         }
     }

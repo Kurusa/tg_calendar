@@ -5,6 +5,7 @@ namespace App\Commands;
 use App\Models\EventDate;
 use Carbon\Carbon;
 use TelegramBot\Api\Types\Inline\InlineKeyboardMarkup;
+use function Symfony\Component\String\b;
 
 class SendCalendar extends BaseCommand
 {
@@ -12,7 +13,7 @@ class SendCalendar extends BaseCommand
     function processCommand($param = null)
     {
         $keyboard = [];
-        $this->addTopButton($keyboard);
+        $this->addMonthButton($keyboard);
         $this->addWeekDays($keyboard);
         $this->addDayButtons($keyboard);
 
@@ -33,14 +34,42 @@ class SendCalendar extends BaseCommand
         }
     }
 
-    public function addTopButton(array &$keyboard)
+    public function addMonthButton(array &$keyboard)
     {
-        $keyboard[] = [
-            [
-                'text'          => $this->text['months'][date('n')],
-                'callback_data' => json_encode([]),
-            ]
-        ];
+        $currentMonthButton = [[
+            'text'          => $this->text['months'][date('n')],
+            'callback_data' => json_encode([]),
+        ]];
+        $nextMonthButton = [[
+            'text'          => $this->text['months'][date('n', strtotime('next month')) - 1] . ' ' . $this->text['next_month'],
+            'callback_data' => json_encode([
+                'a' => 'next_month',
+            ]),
+        ]];
+        $prevMonthButton = [[
+            'text'          => $this->text['prev_month'] . ' ' . $this->text['months'][date('n')],
+            'callback_data' => json_encode([
+                'a' => 'prev_month',
+            ]),
+        ]];
+
+        if ($this->update->getCallbackQuery()) {
+            $action = json_decode($this->update->getCallbackQuery()->getData(), true)['a'];
+            switch ($action) {
+                case 'next_month':
+                    $currentMonthButton[0]['text'] = $this->text['months'][date('n', strtotime('next month')) - 1];
+                    $keyboard[] = $currentMonthButton;
+                    $keyboard[] = $prevMonthButton;
+                    break;
+                case 'prev_month':
+                    $keyboard[] = $currentMonthButton;
+                    $keyboard[] = $nextMonthButton;
+                    break;
+            }
+        } else {
+            $keyboard[] = $currentMonthButton;
+            $keyboard[] = $nextMonthButton;
+        }
     }
 
     public function addWeekDays(array &$keyboard)
@@ -55,39 +84,52 @@ class SendCalendar extends BaseCommand
 
     public function addDayButtons(array &$keyboard)
     {
+        $startDate = Carbon::now();
+        $action = null;
+        if ($this->update->getCallbackQuery()) {
+            $action = json_decode($this->update->getCallbackQuery()->getData(), true)['a'];
+            if ($action == 'next_month') {
+                $startDate = $startDate->addMonthsNoOverflow();
+            }
+        }
         $dayButtons = [];
 
+        $n = 0;
         // first offset
-        $startWeekDay = Carbon::now()->startOfMonth()->dayOfWeek;
+        $startWeekDay = $startDate->startOfMonth()->dayOfWeek - 1;
         for ($i = 1; $i <= $startWeekDay; $i++) {
+            $n++;
             $dayButtons[] = [
                 'text'          => '‎',
                 'callback_data' => json_encode([]),
             ];
         }
 
-        $n = 1;
-        for ($i = $startWeekDay; $i <= Carbon::now()->daysInMonth; $i++) {
-            if ($i % 7 == 0) {
+        for ($i = 1; $i <= $startDate->daysInMonth; $i++) {
+            if ($n % 7 == 0) {
                 $keyboard[] = $dayButtons;
                 $dayButtons = [];
             }
 
-            $dayNumber = $n++;
+            $n++;
 
             // flag if event exists
-            $eventExists = EventDate::findEventsByDay($dayNumber)->count();
+            $month = $action == 'next_month' ? date('n', strtotime('next month')) - 1 : date('n');
+            $eventExists = EventDate::findEventsByDate($i, $month)->count();
             $dayButtons[] = [
-                'text'          => ($eventExists ? $this->text['event_exists_emoji'] : '') . $dayNumber,
+                'text'          => ($eventExists ? $this->text['event_exists_emoji'] : '') . $i,
                 'callback_data' => json_encode([
                     'a'     => $eventExists ? 'display_schedule' : 'create_event',
-                    'date'  => Carbon::create(Carbon::now()->year, Carbon::now()->month, $dayNumber)->timestamp,
+                    'date'  => Carbon::create(Carbon::now()->year, $startDate->month, $i)->timestamp,
                 ]),
             ];
         }
 
         // last offset
-        for ($i = 0; $i <= 8 - count($dayButtons); $i++) {
+        for ($i = 0; $i <= 8 - sizeof($dayButtons); $i++) {
+            if (sizeof($dayButtons) == 7) {
+                break;
+            }
             $dayButtons[] = [
                 'text'          => '‎',
                 'callback_data' => json_encode([]),

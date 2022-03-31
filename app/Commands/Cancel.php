@@ -13,6 +13,7 @@ class Cancel extends BaseCommand
     {
         switch ($this->user->status) {
             case UserStatus::ASK_TITLE:
+            case UserStatus::ASK_ADMIN:
                 $this->triggerCommand(MainMenu::class);
                 break;
             case UserStatus::ASK_DESCRIPTION:

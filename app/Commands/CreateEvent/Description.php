@@ -21,7 +21,7 @@ class Description extends BaseCommand
             $this->getBot()->sendMessage($this->user->chat_id, $this->text['event_created'] . $template->render([
                     'event' => $this->user->draftEvent(),
                     'day'   => $dateObject->format('d'),
-                    'month' => $this->text['months'][date('n')],
+                    'month' => $this->text['months'][$dateObject->format('n')],
                     'time'  => $dateObject->format('h:i'),
                 ]), 'HTML',
             );
@@ -36,9 +36,13 @@ class Description extends BaseCommand
             $this->user->status = UserStatus::ASK_DESCRIPTION;
             $this->user->save();
 
-            $this->getBot()->sendMessageWithKeyboard($this->user->chat_id, $this->text['write_event_description'], new ReplyKeyboardMarkup([
-                [$this->text['cancel']]
-            ], false, true));
+            $this->getBot()->sendMessageWithKeyboard(
+                $this->user->chat_id,
+                $this->text['write_event_description'],
+                new ReplyKeyboardMarkup([
+                    [$this->text['cancel']]
+                ], false, true),
+            );
         }
     }
 

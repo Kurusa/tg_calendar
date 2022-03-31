@@ -1,6 +1,7 @@
 <?php
 
-use App\Commands\{CreateEvent\Description,
+use App\Commands\{AddAdmin,
+    CreateEvent\Description,
     CreateEvent\Hour,
     CreateEvent\Minutes,
     CreateEvent\Title,
@@ -9,8 +10,7 @@ use App\Commands\{CreateEvent\Description,
     EventInfo,
     MainMenu,
     SendCalendar,
-    Cancel
-};
+    Cancel};
 use App\Services\Enums\UserStatus;
 
 return [
@@ -25,12 +25,14 @@ return [
         'delete_event'     => Delete::class,
         'edit_title'       => \App\Commands\Edit\Title::class,
         'edit_description' => \App\Commands\Edit\Description::class,
+        'next_month'       => SendCalendar::class,
+        'prev_month'       => SendCalendar::class,
         'create_event_from_schedule' => Hour::class,
     ],
     
     'keyboard_commands' => [
-        'cancel'   => Cancel::class,
-        'calendar' => SendCalendar::class,
+        'cancel'    => Cancel::class,
+        'add_admin' => AddAdmin::class,
     ],
     
     'status_commands' => [
@@ -39,6 +41,7 @@ return [
         UserStatus::ASK_DESCRIPTION  => Description::class,
         UserStatus::EDIT_DESCRIPTION => \App\Commands\Edit\Description::class,
         UserStatus::EDIT_TITLE       => \App\Commands\Edit\Title::class,
+        UserStatus::ASK_ADMIN        => AddAdmin::class,
     ],
     
     'slash_commands' => [

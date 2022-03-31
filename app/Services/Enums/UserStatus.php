@@ -9,5 +9,6 @@ final class UserStatus {
     const ASK_DESCRIPTION  = 'asking description of event';
     const EDIT_DESCRIPTION = 'editing description of event';
     const EDIT_TITLE       = 'editing title of event';
+    const ASK_ADMIN        = 'ask for admin username';
 
 }
