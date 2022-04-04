@@ -5,7 +5,6 @@ namespace App\Commands;
 use App\Models\EventDate;
 use Carbon\Carbon;
 use TelegramBot\Api\Types\Inline\InlineKeyboardMarkup;
-use function Symfony\Component\String\b;
 
 class SendCalendar extends BaseCommand
 {
@@ -41,7 +40,7 @@ class SendCalendar extends BaseCommand
             'callback_data' => json_encode([]),
         ]];
         $nextMonthButton = [[
-            'text'          => $this->text['months'][date('n', strtotime('next month')) - 1] . ' ' . $this->text['next_month'],
+            'text'          => $this->text['months'][date('n', strtotime('next month'))] . ' ' . $this->text['next_month'],
             'callback_data' => json_encode([
                 'a' => 'next_month',
             ]),
@@ -57,11 +56,12 @@ class SendCalendar extends BaseCommand
             $action = json_decode($this->update->getCallbackQuery()->getData(), true)['a'];
             switch ($action) {
                 case 'next_month':
-                    $currentMonthButton[0]['text'] = $this->text['months'][date('n', strtotime('next month')) - 1];
+                    $currentMonthButton[0]['text'] = $this->text['months'][date('n', strtotime('next month'))];
                     $keyboard[] = $currentMonthButton;
                     $keyboard[] = $prevMonthButton;
                     break;
                 case 'prev_month':
+                case 'back_to_calendar':
                     $keyboard[] = $currentMonthButton;
                     $keyboard[] = $nextMonthButton;
                     break;
@@ -96,8 +96,8 @@ class SendCalendar extends BaseCommand
 
         $n = 0;
         // first offset
-        $startWeekDay = $startDate->startOfMonth()->dayOfWeek - 1;
-        for ($i = 1; $i <= $startWeekDay; $i++) {
+        $startWeekDay = $startDate->startOfMonth()->dayOfWeek;
+        for ($i = 1; $i < $startWeekDay; $i++) {
             $n++;
             $dayButtons[] = [
                 'text'          => '‎',
@@ -114,7 +114,7 @@ class SendCalendar extends BaseCommand
             $n++;
 
             // flag if event exists
-            $month = $action == 'next_month' ? date('n', strtotime('next month')) - 1 : date('n');
+            $month = $action == 'next_month' ? date('n', strtotime('next month')) : date('n');
             $eventExists = EventDate::findEventsByDate($i, $month)->count();
             $dayButtons[] = [
                 'text'          => ($eventExists ? $this->text['event_exists_emoji'] : '') . $i,
@@ -126,14 +126,14 @@ class SendCalendar extends BaseCommand
         }
 
         // last offset
-        for ($i = 0; $i <= 8 - sizeof($dayButtons); $i++) {
-            if (sizeof($dayButtons) == 7) {
-                break;
-            }
+        for ($i = 0; $i < 7; $i++) {
             $dayButtons[] = [
                 'text'          => '‎',
                 'callback_data' => json_encode([]),
             ];
+            if (sizeof($dayButtons) == 7) {
+                break;
+            }
         }
         $keyboard[] = $dayButtons;
     }

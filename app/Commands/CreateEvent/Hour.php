@@ -11,10 +11,14 @@ class Hour extends BaseCommand
 
     function processCommand($param = null)
     {
+        if (!$this->user->isAdmin()) {
+            return false;
+        }
+
         $timestamp = json_decode($this->update->getCallbackQuery()->getData(), true)['date'];
         $buttons = [];
         $keyboard = [];
-        for ($i = 1; $i <= 24; $i++) {
+        for ($i = 7; $i <= 24; $i++) {
             $hour = strlen(strval($i)) == 1 ? '0' . $i : $i;
 
             $buttons[] = [

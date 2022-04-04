@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Services\Enums\UserRole;
+use App\Services\Enums\UserStatus;
 use TelegramBot\Api\Types\Update;
 use App\Models\User;
 
@@ -27,7 +28,7 @@ abstract class BaseCommand extends BasicMessages
                 'user_name'  => $this->botUser->getUsername(),
                 'first_name' => $this->botUser->getFirstName(),
                 'role'       => UserRole::USER,
-                'status'     => \App\Services\Enums\UserStatus::NEW,
+                'status'     => UserStatus::NEW,
             ],
         );
 

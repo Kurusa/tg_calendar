@@ -11,6 +11,10 @@ class AddAdmin extends BaseCommand
 
     function processCommand($param = null)
     {
+        if (!$this->user->isAdmin()) {
+            return false;
+        }
+
         if ($this->user->status == UserStatus::ASK_ADMIN) {
             $user = User::where('user_name', ltrim($this->update->getMessage()->getText(), '@'))->first();
             if ($user) {

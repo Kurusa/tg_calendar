@@ -1,0 +1,5 @@
+{{ date }}
+
+{% for event in events %}
+{{ event.date|date('H:i') }}: {{ event.event.title }}
+{% endfor %}

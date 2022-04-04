@@ -13,14 +13,16 @@ class MainMenu extends BaseCommand
         $this->user->status = UserStatus::NEW;
         $this->user->save();
 
-        $this->getBot()->sendMessageWithKeyboard(
-            $this->user->chat_id,
-            $this->text['main_menu'],
-            new ReplyKeyboardMarkup(
-                [[$this->text['add_admin']]],
-                false, true,
-            )
-        );
+        if ($this->user->isAdmin()) {
+            $this->getBot()->sendMessageWithKeyboard(
+                $this->user->chat_id,
+                $this->text['main_menu'],
+                new ReplyKeyboardMarkup(
+                    [[$this->text['add_admin']]],
+                    false, true,
+                )
+            );
+        }
 
         $this->triggerCommand(SendCalendar::class);
     }
